@@ -46,7 +46,7 @@ class MapInfo(object):
         if not (self.lat_is_valid(lat) and self.lon_is_valid(lon)):
             resp.status = falcon.HTTP_400
         else:
-            db = psycopg2.connect("dbname=evac user=romain")
+            db = psycopg2.connect("dbname=evac user=cquest")
             cur = db.cursor()
             
             
@@ -61,6 +61,8 @@ class MapInfo(object):
             cur.execute(query)
             what_is_around = cur.fetchall()[0][0]
             
+            print(type(what_is_around))
+            
             resp.set_header('X-Powered-By', 'OpenEvacMap')
             if what_is_around is None:
                 resp.status = falcon.HTTP_204
@@ -68,6 +70,6 @@ class MapInfo(object):
                 resp.status = falcon.HTTP_200
                 resp.set_header('Access-Control-Allow-Origin', '*')
                 resp.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
-                resp.body = (what_is_around)
+                resp.body = (str(what_is_around))
             
             db.close()
