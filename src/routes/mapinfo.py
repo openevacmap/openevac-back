@@ -43,7 +43,7 @@ class MapInfo(object):
         if not (self.lat_is_valid(lat) and self.lon_is_valid(lon)):
             resp.status = falcon.HTTP_400
         else:
-            db = psycopg2.connect("dbname=evac user=cquest")
+            db = psycopg2.connect("dbname=evac user=romain")
             cur = db.cursor()
             
             
