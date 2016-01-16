@@ -33,16 +33,37 @@ class Address(object):
             raise ValueError("Json does not contain a dict")
         return patch
 
-    def on_patch(self, req, resp):
+    def verify_address_id(self, address_id):
+        
+        if address_id is None:
+            raise ValueError("Address ID is None")
+        
+    def on_patch(self, req, resp, **kargs):
         '''Update database according to JSON and give ID back
         '''
         
+        address_id = kargs.get('id')
         patch_json = req.stream.read().decode('utf-8')
         
         try:
+            self.verify_address_id(address_id)
             patch = self.get_json_list(patch_json)
         except:
             resp.status = falcon.HTTP_400
         else:
-            print(patch)
-            return
+            cur = db.cursor()
+            
+            columns = ['address','path']
+            values = ["'%s'" % address_id,"'/tmp'"]
+            
+            for key, value in patch.items():
+                if value is not None:
+                    columns.append(key)
+                    values.append(value)
+            
+            insert = "INSERT INTO maps (%s)" % ",".join(columns)
+            insert += " VALUES (%s)" % ",".join(values)
+            
+            cur.execute(insert)
+            db.commit()
+            cur.close()
