@@ -56,7 +56,7 @@ class MapInfo(object):
             query += " ST_X(geom) as lon, ST_Y(geom) as lat, address, level, building, id, address_label FROM %s" % self._table
                     # Look at 1/10 (0.1) degrees around spot.
             query += " WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s,%s),4326),geom,0.1)" % (lon,lat)
-            query += " ORDER BY ST_Distance(geom,ST_SetSRID(ST_MakePoint(%s,%s),4326))" % (lon,lat)
+            query += " ORDER BY ST_Distance(geom,ST_SetSRID(ST_MakePoint(%s,%s),4326)), level" % (lon,lat)
             query += " LIMIT 40"
             query += " ) t"
             cur.execute(query)
