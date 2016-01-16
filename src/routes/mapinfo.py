@@ -48,9 +48,15 @@ class MapInfo(object):
             resp.status = falcon.HTTP_400
         else:
             cur = db.cursor()
-        
-            nb_maps = decimal.Decimal(req.params.get('nb_maps','20'))
-            nb_addr = decimal.Decimal(req.params.get('nb_addr','10'))
+            
+            nb_maps_raw = req.get_param('nb_maps')
+            nb_addr_raw = req.get_param('nb_addr')
+            if nb_maps_raw is None:
+                nb_maps_raw = '20'
+            if nb_addr_raw is None:
+                nb_addr_raw = '10'
+            nb_maps = decimal.Decimal(nb_maps_raw)
+            nb_addr = decimal.Decimal(nb_addr_raw)
 
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
             loc = "st_setsrid(st_makepoint(%s,%s),4326)" % (lon,lat)
