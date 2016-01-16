@@ -7,6 +7,7 @@ Created on 16 janv. 2016
 
 import decimal
 import falcon
+from psycopg2.extensions import adapt
 
 from db import db
 
@@ -61,8 +62,9 @@ class MapInfo(object):
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
             loc = "st_setsrid(st_makepoint(%s,%s),4326)" % (lon,lat)
             query = "SELECT array_to_json(array_agg(row_to_json(t)))::text FROM ("
-            query += " SELECT floor(st_distance(geom::geography, %s::geography)) as dist, " % (loc)
-            query += " ST_X(geom) as lon, ST_Y(geom) as lat, * FROM ((select * from ban_nomap where ST_DWithin(geom, %s, 0.001) order by st_distance(geom,%s) limit %s) union (select * from map_info where ST_DWithin(geom, %s, 0.1) limit %s)) as d ORDER BY ST_Distance(geom,%s), level" % (loc,loc,nb_addr,loc,nb_maps,loc)
+            query += " SELECT floor(st_distance(geom::geography, %s::geography)) as dist, " % loc
+            query += " ST_X(geom) as lon, ST_Y(geom) as lat, * FROM ((select * from ban_nomap where ST_DWithin(geom, %s, 0.001) order by st_distance(geom,%s) limit %s) union (select * from map_info where ST_DWithin(geom, %s, 0.1) limit %s)) as d ORDER BY ST_Distance(geom,%s), level" % (
+                        loc,loc,adapt(nb_addr),loc,adapt(nb_maps),loc)
             query += " ) t"
             cur.execute(query)
             what_is_around = cur.fetchone()[0]
