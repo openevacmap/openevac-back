@@ -58,4 +58,3 @@ class Map(object):
                 with open(map_path, "rb") as f:
                     resp.body = f.read()
 
-            db.close()

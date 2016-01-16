@@ -51,7 +51,7 @@ class MapInfo(object):
             
             
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
-            query = "SELECT array_to_json(array_agg(row_to_json(t))) FROM ("
+            query = "SELECT array_to_json(array_agg(row_to_json(t)))::text FROM ("
             query += " SELECT address, level, building, id, address_label FROM %s" % self._table
                     # Look at 1/10 (0.1) degrees around spot.
             query += " WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s,%s),4326),geom,0.1)" % (lon,lat)
@@ -59,9 +59,8 @@ class MapInfo(object):
             query += " LIMIT 40"
             query += " ) t"
             cur.execute(query)
-            what_is_around = cur.fetchall()[0][0]
-            
-            print(type(what_is_around))
+            what_is_around = cur.fetchone()[0]
+
             
             resp.set_header('X-Powered-By', 'OpenEvacMap')
             if what_is_around is None:
@@ -70,6 +69,4 @@ class MapInfo(object):
                 resp.status = falcon.HTTP_200
                 resp.set_header('Access-Control-Allow-Origin', '*')
                 resp.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
-                resp.body = (str(what_is_around))
-            
-            db.close()
+                resp.body = (what_is_around)
