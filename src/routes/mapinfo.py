@@ -76,3 +76,5 @@ class MapInfo(object):
                 resp.set_header('Access-Control-Allow-Origin', '*')
                 resp.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
                 resp.body = (what_is_around)
+            cur.close()
+
