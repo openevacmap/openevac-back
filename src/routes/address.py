@@ -5,9 +5,9 @@ Created on 16 janv. 2016
 @author: romain
 '''
 
+import cgi
 import decimal
 import falcon
-import json
 import os
 
 import config
@@ -17,29 +17,22 @@ class Address(object):
     '''
     Patch maps information related to an address
     '''
+    
+    _table = "maps"
 
-    def patch_json_is_valid(self, patch_json):
+    def lat_is_valid(self, lat):
         
-        is_valid = True
-        if patch_json is None:
-            is_valid = False
-        return is_valid
+        lat_is_valid = True
+        if lat is None:
+            lat_is_valid = False
+        return lat_is_valid
+    
+    def lon_is_valid(self, lon):
+        lon_is_valid = True
+        if lon is None:
+            lon_is_valid = False
+        return lon_is_valid
 
-    def get_json_list(self, patch_json):
-        
-        if not self.patch_json_is_valid(patch_json):
-            raise ValueError("None found, expected a JSON string")
-        
-        patch = json.loads(patch_json)
-        
-        if not isinstance(patch, dict):
-            raise ValueError("Json does not contain a dict")
-        if not ('image' in patch and
-                'lat' in patch and
-                'lon' in patch):
-             raise ValueError("Missing mandatory key/values in patch")
-        
-        return patch
 
     def verify_address_id(self, address_id):
         
@@ -48,59 +41,81 @@ class Address(object):
         
     def on_options(self, req, resp, **kargs):
         resp.set_header('Access-Control-Allow-Origin', '*')
-        resp.set_header('Access-Control-Allow-Methods', 'PATCH')
+        resp.set_header('Access-Control-Allow-Methods', 'POST')
         resp.set_header('Access-Control-Allow-Headers', 
                         'X-Requested-With, Content-Type')
         resp.status = falcon.HTTP_204
-
-    def on_patch(self, req, resp, **kargs):
+        
+        
+    def on_post(self, req, resp, **kargs):
         '''Update database according to JSON and give ID back
         '''
         
+        
         address_id = kargs.get('id')
-        patch_json = req.stream.read().decode('utf-8')
-        print(patch_json)
-        print(req)
-        print(dir(req))
+
+        env = req.env
+        env.setdefault('QUERY_STRING', '')
+        
+        form = cgi.FieldStorage(fp=req.stream, environ=env)
         try:
-            self.verify_address_id(address_id)
-            patch = self.get_json_list(patch_json)
-        except:
+            file_item = form['image']
+            raw_lat_item = form['lat']
+            raw_lon_item = form['lon']
+        except KeyError:
+            raw_lat = None
+            raw_lon = None
+            image_file = None
+        else:
+            image_file = file_item.file
+            raw_lat = raw_lat_item.value
+            raw_lon = raw_lon_item.value
+        
+        if raw_lat is None or raw_lon is None or image_file is None:
             resp.status = falcon.HTTP_400
-            raise
+            lat = None
+            lon = None
+        else:
+            lat = decimal.Decimal(raw_lat)
+            lon = decimal.Decimal(raw_lon)
+        
+        if not (self.lat_is_valid(lat) and self.lon_is_valid(lon)):
+            resp.status = falcon.HTTP_400
         else:
             cur = db.cursor()
             
-            columns = ['address','path']
-            values = ["'%s'" % address_id,"'/tmp'"]
+            columns = ['geom', 'address']
+            values = ['st_Setsrid(st_makePoint(%s,%s),4326)' % (lon, lat),
+                      "'%s'" % address_id]
+            for param in ('name','building','level'):
+                try:
+                    param_item = form[param]
+                except KeyError:
+                    pass
+                else:
+                    columns.append(param)
+                    values.append("'%s'" % param_item.value)
             
-            
-            lat = decimal.Decimal(patch.pop('lat'))
-            lon = decimal.Decimal(patch.pop('lon'))
-
-            for key, value in patch.items():
-                if value is not None:
-                    columns.append(key)
-                    values.append("'%s'" % value)
-            
-            columns.append('geom')
-            values.append('st_Setsrid(st_makePoint(%s,%s),4326)' % (lon, lat))
-            
-            insert = "INSERT INTO maps (%s)" % ",".join(columns)
+            insert = "INSERT INTO %s (%s)" % (self._table, ",".join(columns))
             insert += " VALUES (%s)" % ",".join(values)
             insert += " RETURNING *"
             cur.execute(insert)
-            print(cur.query)
-            print(cur.fetchone())
-            
-            #image_data = patch.pop('image')
-            #image_path = os.path.join(config.map_dir, "%s.jpg" % uuid)
 
-            #with open(image_path, "wb") as f:
-            #    f.write(image_data)
+            uuid = cur.fetchone()[0]
+
+            image_path = os.path.join(config.map_dir, "%s.jpg" % uuid)
             
+            with open(image_path, "wb") as f:
+                f.write(image_file.read())
+            
+            cur2 = db.cursor()
+            update = "UPDATE %s" % self._table
+            update += " SET path='%s'" % image_path
+            update += " WHERE id='%s'" % uuid
+            cur2.execute(update)
             db.commit()
             cur.close()
+            cur2.close()
             resp.status = falcon.HTTP_200
             resp.set_header('Access-Control-Allow-Origin', '*')
             resp.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
