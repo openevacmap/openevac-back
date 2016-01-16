@@ -51,7 +51,9 @@ class Map(object):
                 resp.status = falcon.HTTP_404
             else:
                 full_path = os.path.join(config.map_dir,map_path)
-                preview = req.params.get('preview','0')
+                preview = req.get_param('preview')
+                if preview is None:
+                    preview = '0'
                 if preview=='1':
                     outfile = os.path.splitext(full_path)[0] + "_preview.jpg"
                     print(outfile)
