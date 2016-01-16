@@ -37,7 +37,7 @@ class Address(object):
         if not ('image' in patch and
                 'lat' in patch and
                 'lon' in patch):
-            raise ValueError("Missing mandatory key/values in patch")
+             raise ValueError("Missing mandatory key/values in patch")
         
         return patch
 
@@ -46,6 +46,13 @@ class Address(object):
         if address_id is None:
             raise ValueError("Address ID is None")
         
+    def on_options(self, req, resp, **kargs):
+        resp.set_header('Access-Control-Allow-Origin', '*')
+        resp.set_header('Access-Control-Allow-Methods', 'PATCH')
+        resp.set_header('Access-Control-Allow-Headers', 
+                        'X-Requested-With, Content-Type')
+        resp.status = falcon.HTTP_204
+
     def on_patch(self, req, resp, **kargs):
         '''Update database according to JSON and give ID back
         '''
@@ -53,6 +60,8 @@ class Address(object):
         address_id = kargs.get('id')
         patch_json = req.stream.read().decode('utf-8')
         print(patch_json)
+        print(req)
+        print(dir(req))
         try:
             self.verify_address_id(address_id)
             patch = self.get_json_list(patch_json)
@@ -75,7 +84,7 @@ class Address(object):
                     values.append("'%s'" % value)
             
             columns.append('geom')
-            values.append('st_Setsrid(st_makePoint(%s,%s),4326)' % (lat, lon))
+            values.append('st_Setsrid(st_makePoint(%s,%s),4326)' % (lon, lat))
             
             insert = "INSERT INTO maps (%s)" % ",".join(columns)
             insert += " VALUES (%s)" % ",".join(values)
@@ -92,3 +101,7 @@ class Address(object):
             
             db.commit()
             cur.close()
+            resp.status = falcon.HTTP_200
+            resp.set_header('Access-Control-Allow-Origin', '*')
+            resp.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
+
