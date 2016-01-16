@@ -15,4 +15,4 @@ if __name__ == '__main__':
     
     
     # things will handle all requests to the matching URL path
-    app.add_route('/maps-info', routes.mapinfo.MapInfo)
+    app.add_route('/maps-info', routes.mapinfo)
