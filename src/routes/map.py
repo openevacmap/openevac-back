@@ -9,6 +9,8 @@ import falcon
 import os
 import psycopg2
 
+import config
+
 class Map(object):
     '''
     Get the map according to the UUID
@@ -33,7 +35,8 @@ class Map(object):
         if not self.map_id_is_valid(map_id):
             resp.status = falcon.HTTP_400
         else:
-            db = psycopg2.connect("dbname=evac user=romain")
+            db = psycopg2.connect("dbname=%s user=%s" % (config.db_name,
+                                                         config.db_user))
             cur = db.cursor()
             
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)

@@ -9,6 +9,8 @@ import decimal
 import falcon
 import psycopg2
 
+import config
+
 class MapInfo(object):
     '''
     Manage map info requests 
@@ -46,7 +48,8 @@ class MapInfo(object):
         if not (self.lat_is_valid(lat) and self.lon_is_valid(lon)):
             resp.status = falcon.HTTP_400
         else:
-            db = psycopg2.connect("dbname=evac user=cquest")
+            db = psycopg2.connect("dbname=%s user=%s" % (config.db_name,
+                                                         config.db_user))
             cur = db.cursor()
             
             
