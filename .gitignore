@@ -64,3 +64,4 @@ target/
 .pydevproject
 .project
 
+/.settings/

@@ -71,3 +71,5 @@ class Map(object):
                                                                     full_path))
                 with open(full_path, "rb") as f:
                     resp.body = f.read()
+            cur.close()
+
