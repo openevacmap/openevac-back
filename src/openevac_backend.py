@@ -13,4 +13,4 @@ app = falcon.API()
 
 
 # things will handle all requests to the matching URL path
-app.add_route('/maps-info', routes.mapinfo)
+app.add_route('/v0/maps-info', routes.mapinfo)
