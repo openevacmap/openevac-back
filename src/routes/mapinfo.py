@@ -14,7 +14,7 @@ class MapInfo(object):
     Manage map info requests 
     '''
 
-    _table = "maps"
+    _table = "map_info"
 
     def lat_is_valid(self, lat):
         
@@ -49,7 +49,7 @@ class MapInfo(object):
             
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
             query = "SELECT array_to_json(array_agg(row_to_json(t))) FROM ("
-            query += " SELECT address, level, building, id FROM %s" % self._table
+            query += " SELECT address, level, building, id, address_label FROM %s" % self._table
                     # Look at 1/10 (0.1) degrees around spot.
             query += " WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s,%s),4326),geom,0.1)" % (lon,lat)
             query += " ORDER BY ST_Distance(geom,ST_SetSRID(ST_MakePoint(%s,%s),4326))" % (lon,lat)
