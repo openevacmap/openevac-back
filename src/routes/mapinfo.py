@@ -7,9 +7,8 @@ Created on 16 janv. 2016
 
 import decimal
 import falcon
-import psycopg2
 
-import config
+from db import db
 
 class MapInfo(object):
     '''
@@ -48,8 +47,6 @@ class MapInfo(object):
         if not (self.lat_is_valid(lat) and self.lon_is_valid(lon)):
             resp.status = falcon.HTTP_400
         else:
-            db = psycopg2.connect("dbname=%s user=%s" % (config.db_name,
-                                                         config.db_user))
             cur = db.cursor()
             
             
@@ -64,7 +61,7 @@ class MapInfo(object):
             cur.execute(query)
             what_is_around = cur.fetchall()[0][0]
             
-            print(type(what_is_around))
+            print(what_is_around)
             
             resp.set_header('X-Powered-By', 'OpenEvacMap')
             if what_is_around is None:
@@ -74,5 +71,3 @@ class MapInfo(object):
                 resp.set_header('Access-Control-Allow-Origin', '*')
                 resp.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
                 resp.body = (str(what_is_around))
-            
-            db.close()

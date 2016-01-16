@@ -7,9 +7,8 @@ Created on 16 janv. 2016
 
 import falcon
 import os
-import psycopg2
 
-import config
+from db import db
 
 class Map(object):
     '''
@@ -35,8 +34,6 @@ class Map(object):
         if not self.map_id_is_valid(map_id):
             resp.status = falcon.HTTP_400
         else:
-            db = psycopg2.connect("dbname=%s user=%s" % (config.db_name,
-                                                         config.db_user))
             cur = db.cursor()
             
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
@@ -61,4 +58,3 @@ class Map(object):
                 with open(map_path, "rb") as f:
                     resp.body = f.read()
 
-            db.close()
