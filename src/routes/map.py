@@ -7,9 +7,10 @@ Created on 16 janv. 2016
 
 import falcon
 import os
-import config
 from PIL import Image
+from psycopg2.extensions import adapt
 
+import config
 from db import db
 
 preview_size = 600,600
@@ -41,7 +42,7 @@ class Map(object):
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
             query = "SELECT path FROM %s" % self._table
                     # Look at 1/10 (0.1) degrees around spot.
-            query += " WHERE id='%s'" % (map_id)
+            query += " WHERE id=%s" % adapt(map_id)
             cur.execute(query)
             map_path = cur.fetchall()[0][0]
             

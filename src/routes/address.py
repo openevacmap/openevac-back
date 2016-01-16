@@ -9,6 +9,7 @@ import cgi
 import decimal
 import falcon
 import os
+from psycopg2.extensions import adapt
 
 import config
 from db import db
@@ -86,7 +87,7 @@ class Address(object):
             
             columns = ['geom', 'address']
             values = ['st_Setsrid(st_makePoint(%s,%s),4326)' % (lon, lat),
-                      "'%s'" % address_id]
+                      "%s" % adapt(address_id)]
             for param in ('name','building','level'):
                 try:
                     param_item = form[param]
@@ -94,7 +95,7 @@ class Address(object):
                     pass
                 else:
                     columns.append(param)
-                    values.append("'%s'" % param_item.value)
+                    values.append("%s" % adapt(param_item.value))
             
             insert = "INSERT INTO %s (%s)" % (self._table, ",".join(columns))
             insert += " VALUES (%s)" % ",".join(values)
@@ -110,8 +111,8 @@ class Address(object):
             
             cur2 = db.cursor()
             update = "UPDATE %s" % self._table
-            update += " SET path='%s'" % image_path
-            update += " WHERE id='%s'" % uuid
+            update += " SET path=%s" % adapt(image_path)
+            update += " WHERE id=%s" % adapt(uuid)
             cur2.execute(update)
             db.commit()
             cur.close()
