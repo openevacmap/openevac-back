@@ -52,7 +52,8 @@ class MapInfo(object):
             
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
             query = "SELECT array_to_json(array_agg(row_to_json(t)))::text FROM ("
-            query += " SELECT address, level, building, id, address_label FROM %s" % self._table
+            query += " SELECT floor(st_distance(geom::geography, st_setsrid(st_makepoint(%s,%s),4326)::geography)) as dist, " % (lon,lat)
+            query += " ST_X(geom) as lon, ST_Y(geom) as lat, address, level, building, id, address_label FROM %s" % self._table
                     # Look at 1/10 (0.1) degrees around spot.
             query += " WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s,%s),4326),geom,0.1)" % (lon,lat)
             query += " ORDER BY ST_Distance(geom,ST_SetSRID(ST_MakePoint(%s,%s),4326))" % (lon,lat)
