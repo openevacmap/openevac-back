@@ -1,1 +1,4 @@
-from . import mapinfo
+from .mapinfo import MapInfo
+
+mapinfo = MapInfo()
+

@@ -32,13 +32,18 @@ class MapInfo(object):
     def on_get(self, req, resp):
         '''Return json object related to GET with lat & lon HTTP parameters
         '''
-        lat = decimal.Decimal(req.params.get('lat'))
-        lon = decimal.Decimal(req.params.get('lon'))
+        if not hasattr(req, "params"):
+            resp.status = falcon.HTTP_400
+            lat = None
+            lon = None
+        else:
+            lat = decimal.Decimal(req.params.get('lat'))
+            lon = decimal.Decimal(req.params.get('lon'))
         
         if not (self.lat_is_valid(lat) and self.lon_is_valid(lon)):
             resp.status = falcon.HTTP_400
         else:
-            db = psycopg2.connect("dbname=osm user=cquest")
+            db = psycopg2.connect("dbname=evac user=cquest")
             cur = db.cursor()
             
             
