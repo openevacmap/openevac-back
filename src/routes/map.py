@@ -7,6 +7,7 @@ Created on 16 janv. 2016
 
 import falcon
 import os
+import config
 
 from db import db
 
@@ -28,9 +29,7 @@ class Map(object):
         '''Return JPEG map image according to id param
         '''
         
-        print("toto")
         map_id = req.get_param('id')
-        print(map_id)
         if not self.map_id_is_valid(map_id):
             resp.status = falcon.HTTP_400
         else:
@@ -40,7 +39,6 @@ class Map(object):
             query = "SELECT path FROM %s" % self._table
                     # Look at 1/10 (0.1) degrees around spot.
             query += " WHERE id='%s'" % (map_id)
-            print(query)
             cur.execute(query)
             map_path = cur.fetchall()[0][0]
             
@@ -48,13 +46,13 @@ class Map(object):
             if map_path is None:
                 resp.status = falcon.HTTP_404
             else:
+                full_path = os.path.join(config.map_dir,map_path)
                 resp.status = falcon.HTTP_200
                 resp.set_header('Access-Control-Allow-Origin', '*')
                 resp.set_header('Access-Control-Allow-Headers', 
                                 'X-Requested-With')
                 resp.set_header("Content-Type", "image/jpeg")
                 resp.set_header("Content-Length", "%s" % os.path.getsize(
-                                                                    map_path))
-                with open(map_path, "rb") as f:
+                                                                    full_path))
+                with open(full_path, "rb") as f:
                     resp.body = f.read()
-
