@@ -8,8 +8,11 @@ Created on 16 janv. 2016
 import falcon
 import os
 import config
+from PIL import Image
 
 from db import db
+
+preview_size = 600,600
 
 class Map(object):
     '''
@@ -28,7 +31,7 @@ class Map(object):
     def on_get(self, req, resp):
         '''Return JPEG map image according to id param
         '''
-        
+
         map_id = req.get_param('id')
         if not self.map_id_is_valid(map_id):
             resp.status = falcon.HTTP_400
@@ -42,11 +45,21 @@ class Map(object):
             cur.execute(query)
             map_path = cur.fetchall()[0][0]
             
+
             resp.set_header('X-Powered-By', 'OpenEvacMap')
             if map_path is None:
                 resp.status = falcon.HTTP_404
             else:
                 full_path = os.path.join(config.map_dir,map_path)
+                preview = req.params.get('preview','0')
+                if preview=='1':
+                    outfile = os.path.splitext(full_path)[0] + "_preview.jpg"
+                    print(outfile)
+                    if os.path.exists(outfile)==False:
+                        im = Image.open(full_path)
+                        im.thumbnail(preview_size, Image.ANTIALIAS)
+                        im.save(outfile, "JPEG")
+                    full_path=outfile
                 resp.status = falcon.HTTP_200
                 resp.set_header('Access-Control-Allow-Origin', '*')
                 resp.set_header('Access-Control-Allow-Headers', 
