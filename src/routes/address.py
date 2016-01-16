@@ -6,6 +6,7 @@ Created on 16 janv. 2016
 '''
 
 import falcon
+import json
 
 from db import db
 
@@ -21,14 +22,27 @@ class Address(object):
             is_valid = False
         return is_valid
 
+    def get_json_list(self, patch_json):
+        
+        if not self.patch_json_is_valid(patch_json):
+            raise ValueError("None found, expected a JSON string")
+        
+        patch = json.loads(patch_json)
+        
+        if not isinstance(patch, dict):
+            raise ValueError("Json does not contain a dict")
+        return patch
+
     def on_patch(self, req, resp):
         '''Update database according to JSON and give ID back
         '''
         
+        patch_json = req.stream.read().decode('utf-8')
         
-        patch_json = req.stream.read()
-        print(patch_json)
-        if not self.patch_json_is_valid(patch_json):
+        try:
+            patch = self.get_json_list(patch_json)
+        except:
             resp.status = falcon.HTTP_400
         else:
+            print(patch)
             return
