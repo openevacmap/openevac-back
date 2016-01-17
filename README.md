@@ -13,8 +13,8 @@ Les réponses sont au format JSON.
 Retourne les plans disponibles à proximité, ainsi que les adresses proches sans plan.
 
 En option:
-- nb_maps = nombre maximum de plans à renvoyer
-- nb_addr = nombre maximum d'adresses sans plan à renvoyer
+- nb_maps = nombre maximum de plans à renvoyer (par défaut 20)
+- nb_addr = nombre maximum d'adresses sans plan à renvoyer (par défaut 10)
 
 ##GET /v0/map?id=xxxx
 
