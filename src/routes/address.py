@@ -121,17 +121,16 @@ class Address(object):
             try:
                 redirect_url_item = form['redirectUrl']
                 redirect_url = redirect_url_item.value
-                split_result = urllib.parse.urlsplit(redirect_url)
-                netloc = split_result[1]
-                if netloc != config.netloc:
-                    raise ValueError("What do you think you are doing Dave?")
+                #split_result = urllib.parse.urlsplit(redirect_url)
+                #netloc = split_result[1]
+                #if netloc != config.netloc:
+                #    raise ValueError("What do you think you are doing Dave?")
             except:
                 resp.status = falcon.HTTP_200
             else:
                 resp.status = falcon.HTTP_302
-                redirect_uri = "%s/%s" % (redirect_url,
-                                         uuid)
-                resp.set_header('Location', redirect_uri)
+                resp.set_header('Location', redirect_url)
+
             resp.set_header('Access-Control-Allow-Origin', '*')
             resp.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
 
