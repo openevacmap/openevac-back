@@ -78,5 +78,10 @@ class MapInfo(object):
                 resp.set_header('Access-Control-Allow-Origin', '*')
                 resp.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
                 resp.body = (what_is_around)
+
+                query = """INSERT INTO log (loc, ip) VALUES (ST_SetSRID(ST_GeometryFromText('POINT(%s %s)'),4326),'%s');""" % (lon,lat,req.env['REMOTE_ADDR'])
+                cur.execute(query)
+                db.commit()
+
             cur.close()
 

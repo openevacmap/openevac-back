@@ -120,6 +120,20 @@ CREATE VIEW ban_nomap AS
 ALTER TABLE public.ban_nomap OWNER TO cquest;
 
 --
+-- Name: log; Type: TABLE; Schema: public; Owner: cquest
+--
+
+CREATE TABLE log (
+    "time" timestamp without time zone DEFAULT now(),
+    loc geometry,
+    ip inet,
+    map uuid
+);
+
+
+ALTER TABLE public.log OWNER TO cquest;
+
+--
 -- Name: map_info; Type: VIEW; Schema: public; Owner: cquest
 --
 

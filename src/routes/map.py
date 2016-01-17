@@ -2,7 +2,7 @@
 '''
 Created on 16 janv. 2016
 
-@author: romain
+@author: romain, christian
 '''
 
 import falcon
@@ -40,12 +40,12 @@ class Map(object):
             cur = db.cursor()
             
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
-            query = "SELECT path FROM %s" % self._table
-                    # Look at 1/10 (0.1) degrees around spot.
-            query += " WHERE id=%s" % adapt(map_id)
+            query = "SELECT path, ST_astext(geom) as geom FROM %s" % self._table
+            query += " WHERE id='%s'" % (map_id)
             cur.execute(query)
-            map_path = cur.fetchall()[0][0]
-            
+            cur_map = cur.fetchall()
+            map_path = cur_map[0][0]
+            map_geom = cur_map[0][1]
 
             resp.set_header('X-Powered-By', 'OpenEvacMap')
             if map_path is None:
@@ -72,5 +72,10 @@ class Map(object):
                                                                     full_path))
                 with open(full_path, "rb") as f:
                     resp.body = f.read()
+
+                query = """INSERT INTO log (loc, ip, map) VALUES (ST_GeometryFromText('%s'),'%s','%s');""" % (map_geom,req.env['REMOTE_ADDR'],map_id)
+                cur.execute(query)
+                db.commit()
+
             cur.close()
 
