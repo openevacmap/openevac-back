@@ -11,7 +11,7 @@ from PIL import Image
 from psycopg2.extensions import adapt
 
 import config
-from db import db
+import db
 
 
 class Log(object):
@@ -24,8 +24,9 @@ class Log(object):
     def on_get(self, req, resp):
             '''Return logged requests
             '''
-
-            cur = db.cursor()
+            
+            dbc = db.connect()
+            cur = dbc.cursor()
             
             query = """select format('{ "type": "FeatureCollection", "features": [%s]}',string_agg(j,',')) from (select format('{"type": "Feature", "geometry": %s, "properties": {"age": "%s"}}', st_asgeojson(loc),floor(EXTRACT(epoch FROM age(now(),time)))) as j from log where time > now()- interval '2 hour' order by time) as p;"""
             cur.execute(query)
@@ -42,4 +43,6 @@ class Log(object):
                 resp.body = (log_data)
 
             cur.close()
+            dbc.close()
+
 

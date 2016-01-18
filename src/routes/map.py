@@ -11,7 +11,7 @@ from PIL import Image
 from psycopg2.extensions import adapt
 
 import config
-from db import db
+import db
 
 preview_size = 600,600
 
@@ -37,7 +37,8 @@ class Map(object):
         if not self.map_id_is_valid(map_id):
             resp.status = falcon.HTTP_400
         else:
-            cur = db.cursor()
+            dbc = db.connect()
+            cur = dbc.cursor()
             
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
             query = "SELECT path, ST_astext(geom) as geom FROM %s" % self._table
@@ -75,7 +76,8 @@ class Map(object):
 
                 query = """INSERT INTO log (loc, ip, map) VALUES (ST_GeometryFromText('%s'),'%s','%s');""" % (map_geom,req.env['REMOTE_ADDR'],map_id)
                 cur.execute(query)
-                db.commit()
+                dbc.commit()
 
             cur.close()
+            dbc.close()
 
