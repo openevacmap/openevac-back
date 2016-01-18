@@ -9,7 +9,7 @@ import decimal
 import falcon
 from psycopg2.extensions import adapt
 
-from db import db
+import db
 
 class MapInfo(object):
     '''
@@ -48,7 +48,8 @@ class MapInfo(object):
         if not (self.lat_is_valid(lat) and self.lon_is_valid(lon)):
             resp.status = falcon.HTTP_400
         else:
-            cur = db.cursor()
+            dbc = db.connect()
+            cur = dbc.cursor()
             
             nb_maps_raw = req.get_param('nb_maps')
             nb_addr_raw = req.get_param('nb_addr')
@@ -81,7 +82,8 @@ class MapInfo(object):
 
                 query = """INSERT INTO log (loc, ip) VALUES (ST_SetSRID(ST_GeometryFromText('POINT(%s %s)'),4326),'%s');""" % (lon,lat,req.env['REMOTE_ADDR'])
                 cur.execute(query)
-                db.commit()
+                dbc.commit()
 
             cur.close()
+            dbc.close()
 

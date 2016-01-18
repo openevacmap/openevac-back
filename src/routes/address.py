@@ -13,7 +13,7 @@ from psycopg2.extensions import adapt
 import urllib
 
 import config
-from db import db
+import db
 
 class Address(object):
     '''
@@ -84,7 +84,8 @@ class Address(object):
         if not (self.lat_is_valid(lat) and self.lon_is_valid(lon)):
             resp.status = falcon.HTTP_400
         else:
-            cur = db.cursor()
+            dbc = db.connect()
+            cur = dbc.cursor()
             
             columns = ['geom', 'address']
             values = ['st_Setsrid(st_makePoint(%s,%s),4326)' % (lon, lat),
@@ -110,14 +111,15 @@ class Address(object):
             with open(image_path, "wb") as f:
                 f.write(image_file.read())
             
-            cur2 = db.cursor()
+            cur2 = dbc.cursor()
             update = "UPDATE %s" % self._table
             update += " SET path=%s" % adapt(image_path)
             update += " WHERE id=%s" % adapt(uuid)
             cur2.execute(update)
-            db.commit()
+            dbc.commit()
             cur.close()
             cur2.close()
+            dbc.close()
             try:
                 redirect_url_item = form['redirectUrl']
                 redirect_url = redirect_url_item.value

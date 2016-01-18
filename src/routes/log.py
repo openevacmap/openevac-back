@@ -11,7 +11,7 @@ from PIL import Image
 from psycopg2.extensions import adapt
 
 import config
-from db import db
+import db
 
 
 class Log(object):
@@ -24,8 +24,9 @@ class Log(object):
     def on_get(self, req, resp):
             '''Return logged requests
             '''
-
-            cur = db.cursor()
+            
+            dbc = db.connect()
+            cur = dbc.cursor()
             
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
             query = "SELECT array_to_json(array_agg(row_to_json(t)))::text FROM (select EXTRACT(epoch FROM age(time,now()))::integer as age, st_asgeojson(loc) as geometry from log where time > now()- interval '1 hour') as t;"
@@ -43,4 +44,6 @@ class Log(object):
                 resp.body = (log_data)
 
             cur.close()
+            dbc.close()
+
 
