@@ -27,8 +27,7 @@ class Log(object):
 
             cur = db.cursor()
             
-            #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
-            query = "SELECT array_to_json(array_agg(row_to_json(t)))::text FROM (select EXTRACT(epoch FROM age(time,now()))::integer as age, st_asgeojson(loc) as geometry from log where time > now()- interval '1 hour') as t;"
+            query = """select format('{ "type": "FeatureCollection", "features": [%s]}',string_agg(j,',')) from (select format('{"type": "Feature", "geometry": %s, "properties": {"age": "%s"}}', st_asgeojson(loc),floor(EXTRACT(epoch FROM age(now(),time)))) as j from log where time > now()- interval '2 hour' order by time) as p;"""
             cur.execute(query)
             log_data = cur.fetchone()[0]
 
