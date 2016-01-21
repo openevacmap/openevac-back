@@ -32,7 +32,7 @@ class Stat(object):
             stats = cur.fetchone()[0]
 
             resp.set_header('X-Powered-By', 'OpenEvacMap')
-            if log_data is None:
+            if stats is None:
                 resp.status = falcon.HTTP_404
             else:
                 resp.status = falcon.HTTP_200
