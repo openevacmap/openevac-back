@@ -101,7 +101,6 @@ CREATE TABLE maps (
 
 CREATE VIEW ban_nomap AS
  SELECT NULL::uuid AS id,
-    NULL::text AS path,
     a.id AS address,
     NULL::text AS level,
     NULL::text AS building,
@@ -131,7 +130,6 @@ CREATE TABLE log (
 
 CREATE VIEW map_info AS
  SELECT m.id,
-    m.path,
     m.address,
     m.level,
     m.building,
