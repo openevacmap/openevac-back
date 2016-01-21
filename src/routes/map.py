@@ -7,6 +7,7 @@ Created on 16 janv. 2016
 
 import falcon
 import os
+import uuid
 from PIL import Image
 from psycopg2.extensions import adapt
 
@@ -27,6 +28,10 @@ class Map(object):
         is_valid = True
         if map_id is None:
             is_valid = False
+        try:
+            map_uuid = uuid.UUID(map_id)
+        except:
+            is_valid= False
         return is_valid
 
     def on_get(self, req, resp):
@@ -34,6 +39,7 @@ class Map(object):
         '''
 
         map_id = req.get_param('id')
+
         if not self.map_id_is_valid(map_id):
             resp.status = falcon.HTTP_400
         else:
@@ -41,8 +47,7 @@ class Map(object):
             cur = dbc.cursor()
             
             #id (uuid), path (str), geom (geom), address (str), level (str), building (str)
-            query = "SELECT path, ST_astext(geom) as geom FROM %s" % self._table
-            query += " WHERE id='%s'" % (map_id)
+            query = "SELECT path, ST_astext(geom) as geom FROM maps WHERE id='%s' " % map_id
             cur.execute(query)
             cur_map = cur.fetchall()
             map_path = cur_map[0][0]
