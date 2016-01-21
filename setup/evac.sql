@@ -99,14 +99,14 @@ CREATE TABLE maps (
 -- Name: ban_nomap; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW ban_nomap AS
+CREATE OR REPLACE VIEW ban_nomap AS
  SELECT NULL::uuid AS id,
     a.id AS address,
     NULL::text AS level,
     NULL::text AS building,
     NULL::text AS name,
     a.geom,
-    (((((((a.numero || a.rep) || ' '::text) || a.nom_voie) || ', '::text) || a.code_post) || ' '::text) || a.commune) AS address_label
+    (((((((a.numero || lower(a.rep)) || ' '::text) || a.nom_voie) || ', '::text) || a.code_post) || ' '::text) || a.commune) AS address_label
    FROM (ban a
      LEFT JOIN maps m ON ((a.id = m.address)))
   WHERE (m.id IS NULL);
@@ -128,14 +128,14 @@ CREATE TABLE log (
 -- Name: map_info; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW map_info AS
+CREATE OR REPLACE VIEW map_info AS
  SELECT m.id,
     m.address,
     m.level,
     m.building,
     m.name,
     m.geom,
-    (((((((a.numero || a.rep) || ' '::text) || a.nom_voie) || ', '::text) || a.code_post) || ' '::text) || a.commune) AS address_label
+    (((((((a.numero || lower(a.rep)) || ' '::text) || a.nom_voie) || ', '::text) || a.code_post) || ' '::text) || a.commune) AS address_label
    FROM (maps m
      JOIN ban a ON ((a.id = m.address)));
 
