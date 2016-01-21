@@ -28,7 +28,7 @@ class Log(object):
             dbc = db.connect()
             cur = dbc.cursor()
             
-            query = """select format('{ "type": "FeatureCollection", "features": [%s]}',string_agg(j,',')) from (select format('{"type": "Feature", "geometry": %s, "properties": {"age": "%s"}}', st_asgeojson(loc),floor(EXTRACT(epoch FROM age(now(),time)))) as j from log where time > now()- interval '2 hour' order by time) as p;"""
+            query = """select format('{ "type": "FeatureCollection", "features": [%s]}',string_agg(j,',')) from (select format('{"type": "Feature", "geometry": %s, "properties": {"age": "%s"}}', st_asgeojson(loc),floor(EXTRACT(epoch FROM age(now(),time)))) as j from log where time > now()- interval '2 hour' order by time desc) as p;"""
             cur.execute(query)
             log_data = cur.fetchone()[0]
 
